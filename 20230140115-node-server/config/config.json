@@ -1,0 +1,26 @@
+{
+  "development": {
+    "username": "root",
+    "password": "Superhero02",
+    "database": "prakpaw4",
+    "host": "127.0.0.1",
+    "port": 3306,
+    "dialect": "mysql"
+  },
+  "test": {
+    "username": "root",
+    "password": "Superhero02",
+    "database": "prakpaw4",
+    "port": 3306,
+    "host": "127.0.0.1",
+    "dialect": "mysql"
+  },
+  "production": {
+    "username": "root",
+    "password": "Superhero02",
+    "database": "prakpaw4",
+    "host": "127.0.0.1",
+    "port": 3306,
+    "dialect": "mysql"
+  }
+}
