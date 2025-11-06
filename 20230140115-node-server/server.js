@@ -8,6 +8,7 @@ const PORT = 3001;
 const presensiRoutes = require("./routes/presensi");
 const reportRoutes = require("./routes/reports");
 const ruteBuku = require("./routes/books");
+const authRoutes = require('./routes/auth');
 
 // Middleware
 app.use(cors());
@@ -26,6 +27,7 @@ app.get("/", (req, res) => {
 app.use("/api/books", ruteBuku);
 app.use("/api/presensi", presensiRoutes);
 app.use("/api/reports", reportRoutes);
+app.use('/api/auth', authRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -47,3 +49,4 @@ app.use((req, res) => {
 app.listen(PORT, () => {
   console.log(`Express server running at http://localhost:${PORT}/`);
 });
+
