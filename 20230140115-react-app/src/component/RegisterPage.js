@@ -6,6 +6,7 @@ function RegisterPage() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [role, setRole] = useState('mahasiswa');
   const navigate = useNavigate();
 
   const handleRegister = async (e) => {
@@ -15,9 +16,19 @@ function RegisterPage() {
         nama: name,
         email,
         password,
+        role: role,
       });
-      alert('Registrasi berhasil!');
-      navigate('/login');
+      
+      // Auto-login setelah register berhasil
+      const loginRes = await axios.post('http://localhost:3001/api/auth/login', {
+        email,
+        password,
+      });
+      
+      const token = loginRes.data.token;
+      localStorage.setItem('token', token);
+      alert('Registrasi berhasil! Anda akan diarahkan ke dashboard.');
+      navigate('/dashboard');
     } catch (err) {
       alert(err.response ? err.response.data.message : 'Registrasi gagal');
     }
@@ -57,6 +68,17 @@ function RegisterPage() {
               required
               className="w-full p-2 border rounded focus:ring focus:ring-indigo-300"
             />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Role (Pilihan):</label>
+            <select
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+              className="w-full p-2 border rounded focus:ring focus:ring-indigo-300"
+            >
+              <option value="mahasiswa">Mahasiswa</option>
+              <option value="admin">Admin</option>
+            </select>
           </div>
           <button type="submit" className="w-full bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700">
             Register
