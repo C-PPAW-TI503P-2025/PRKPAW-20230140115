@@ -4,7 +4,7 @@ import LoginPage from './component/LoginPage';
 import RegisterPage from './component/RegisterPage';
 import DashboardPage from './component/DashboardPage';
 import PresensiPage from './component/PresensiPage';
-import Reportpage from './component/Reportpage';
+import Reportpage from './component/ReportPage';
 import Navbar from './component/Navbar';
 import ProtectedRoute from './component/ProtectedRoute';
 

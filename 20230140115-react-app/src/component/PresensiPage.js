@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import Webcam from 'react-webcam';
 
 // Fix marker icon issue
 delete L.Icon.Default.prototype._getIconUrl;
@@ -18,6 +19,13 @@ function PresensiPage() {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [image, setImage] = useState(null);
+  const webcamRef = useRef(null);
+  const capture = useCallback(() => {
+    if (!webcamRef.current) return;
+    const imageSrc = webcamRef.current.getScreenshot();
+    setImage(imageSrc);
+  }, [webcamRef]);
   const navigate = useNavigate();
 
   const getToken = () => localStorage.getItem('token');
@@ -61,22 +69,32 @@ function PresensiPage() {
     }
 
     try {
+      // always send multipart/form-data so server multer can parse optional image
+      const formData = new FormData();
+      formData.append('latitude', coords.lat);
+      formData.append('longitude', coords.lng);
+      if (image) {
+        // convert base64 dataURL to blob
+        const blob = await (await fetch(image)).blob();
+        formData.append('image', blob, 'selfie.jpg');
+      }
+
       const config = {
         headers: {
           Authorization: `Bearer ${token}`,
+          // NOTE: do NOT set Content-Type here; browser will set the correct multipart boundary
         },
       };
 
       const response = await axios.post(
         'http://localhost:3001/api/presensi/check-in',
-        {
-          latitude: coords.lat,
-          longitude: coords.lng,
-        },
+        formData,
         config
       );
 
       setMessage(response.data.message || 'Check-in berhasil!');
+      // clear image after successful upload
+      setImage(null);
     } catch (err) {
       setError(
         err.response && err.response.data && err.response.data.message
@@ -105,6 +123,14 @@ function PresensiPage() {
     }
 
     try {
+      const formData = new FormData();
+      formData.append('latitude', coords.lat);
+      formData.append('longitude', coords.lng);
+      if (image) {
+        const blob = await (await fetch(image)).blob();
+        formData.append('image', blob, 'selfie.jpg');
+      }
+
       const config = {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -113,12 +139,11 @@ function PresensiPage() {
 
       const response = await axios.post(
         'http://localhost:3001/api/presensi/check-out',
-        {
-          latitude: coords.lat,
-          longitude: coords.lng,
-        },
+        formData,
         config
       );
+
+      setImage(null);
 
       setMessage(response.data.message || 'Check-out berhasil!');
     } catch (err) {
@@ -172,6 +197,32 @@ function PresensiPage() {
             </p>
           </div>
         )}
+
+        {/* Kamera / Selfie */}
+        <div className="my-4 border rounded-lg overflow-hidden bg-black max-w-xl mx-auto">
+          {image ? (
+            <img src={image} alt="Selfie" className="w-full" />
+          ) : (
+            <Webcam
+              audio={false}
+              ref={webcamRef}
+              screenshotFormat="image/jpeg"
+              className="w-full"
+            />
+          )}
+        </div>
+
+        <div className="mb-4 max-w-xl mx-auto">
+          {!image ? (
+            <button onClick={capture} className="bg-blue-500 text-white px-4 py-2 rounded w-full">
+              Ambil Foto 📸
+            </button>
+          ) : (
+            <button onClick={() => setImage(null)} className="bg-gray-500 text-white px-4 py-2 rounded w-full">
+              Foto Ulang 🔄
+            </button>
+          )}
+        </div>
 
         {/* Messages */}
         {message && (

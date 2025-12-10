@@ -2,13 +2,37 @@
  	const { Presensi } = require("../models");
  	const { format } = require("date-fns-tz");
  	const timeZone = "Asia/Jakarta";
-	const { validationResult } = require("express-validator");
+  const { validationResult } = require("express-validator");
+
+  const multer = require('multer');
+  const path = require('path');
+
+  const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+      cb(null, 'uploads/');
+    },
+    filename: (req, file, cb) => {
+      const userId = req.user ? req.user.id : 'anon';
+      cb(null, `${userId}-${Date.now()}${path.extname(file.originalname)}`);
+    }
+  });
+
+  const fileFilter = (req, file, cb) => {
+    if (file.mimetype && file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Hanya file gambar yang diperbolehkan!'), false);
+    }
+  };
+
+  exports.upload = multer({ storage: storage, fileFilter: fileFilter });
  	
 exports.CheckIn = async (req, res) => {
   // 2. Gunakan try...catch untuk error handling
   try {
     const { id: userId } = req.user;
     const { latitude, longitude } = req.body;
+    const buktiFoto = req.file ? req.file.path : null;
     const waktuSekarang = new Date();
 
     // 3. Ubah cara mencari data menggunakan 'findOne' dari Sequelize
@@ -28,6 +52,7 @@ exports.CheckIn = async (req, res) => {
       checkIn: waktuSekarang,
       latitude: latitude || null,
       longitude: longitude || null,
+      buktiFoto: buktiFoto,
     });
     
     const formattedData = {
@@ -35,7 +60,8 @@ exports.CheckIn = async (req, res) => {
         checkIn: format(newRecord.checkIn, "yyyy-MM-dd HH:mm:ssXXX", { timeZone }),
         checkOut: null,
         latitude: newRecord.latitude,
-        longitude: newRecord.longitude
+        longitude: newRecord.longitude,
+        buktiFoto: newRecord.buktiFoto || null
     };
 
     res.status(201).json({
@@ -70,6 +96,10 @@ exports.CheckOut = async (req, res) => {
     recordToUpdate.checkOut = waktuSekarang;
     if (latitude) recordToUpdate.latitude = latitude;
     if (longitude) recordToUpdate.longitude = longitude;
+    // jika ada file bukti saat checkout, simpan juga
+    if (req.file) {
+      recordToUpdate.buktiFoto = req.file.path;
+    }
     await recordToUpdate.save();
 
     const formattedData = {
@@ -77,7 +107,8 @@ exports.CheckOut = async (req, res) => {
         checkIn: format(recordToUpdate.checkIn, "yyyy-MM-dd HH:mm:ssXXX", { timeZone }),
         checkOut: format(recordToUpdate.checkOut, "yyyy-MM-dd HH:mm:ssXXX", { timeZone }),
         latitude: recordToUpdate.latitude,
-        longitude: recordToUpdate.longitude
+        longitude: recordToUpdate.longitude,
+        buktiFoto: recordToUpdate.buktiFoto || null
     };
 
     res.json({
