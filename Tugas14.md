@@ -6,6 +6,7 @@ Screenshot tampilan halaman SensorLog
 <img width="1600" height="900" alt="image" src="https://github.com/user-attachments/assets/76b1b8ee-9df6-4985-b726-d45bea334e76" />
 
 Tabel database Sensorlog (sudah ditambahkan "motion") 
-<img width="1600" height="900" alt="image" src="https://github.com/user-attachments/assets/e15059c1-cc2b-455d-8ef4-9ad7d3510ab3" />
+<img width="1600" height="900" alt="image" src="https://github.com/user-attachments/assets/21a260c8-ca74-4e4d-9c43-fe63f17c31ee" />
+
 
 
